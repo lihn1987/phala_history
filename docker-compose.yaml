@@ -1,0 +1,63 @@
+version: "3"
+services:
+  pha_nginx:
+    image: lihn1011/nginx:0.6
+    container_name: pha_nginx
+    hostname: pha_nginx
+    command: /bin/bash -c "while true;nginx -g 'daemon off;';do sleep 1 ; done"
+    volumes:
+      - ./data/nginx/config/default:/etc/nginx/sites-enabled/default
+      - ./data/nginx/src/:/var/www/html/
+    ports:
+      - "9980:80"
+  pha_mysql:
+    container_name: pha_mysql
+    image: lihn1011/mysql:0.2
+    volumes:
+        - ./data/mysql/:/var/lib/mysql/
+    restart: always
+    command: mysqld --sql-mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+    expose:
+        - 3306
+    ports:
+        - "9981:3306"
+        
+  pha_scaner:
+    container_name: pha_scaner
+    image: lihn1011/ubuntu:0.5
+    command: /bin/bash -c "while true;do sleep 1 ; done"
+    volumes:
+        - ./data/scaner/:/opt/
+    expose:
+        - 80
+    depends_on:
+        - pha_mysql
+  pha_rest:
+    container_name: pha_rest
+    image: lihn1011/rest:0.5
+    command: /bin/bash -c "while true;do sleep 1 ; done"
+    volumes:
+        - ./data/rest/:/opt/
+    expose:
+        - 80
+    ports:
+        - "9979:80"
+    depends_on:
+        - pha_mysql
+  pha_node_api:
+        container_name: pha_node_api
+        hostname: pha_node_api
+        image: lihn1011/polka_nodejs:0.2
+        #command: /bin/bash -c "cd /opt; while true; do sleep 1; done"
+        command: /bin/bash -c "cd /opt; while true; do sleep 1; done"
+        volumes:
+          - ./data/node_api/:/opt/
+        restart: always
+        expose:
+            - 3000
+        ports:
+            - "3000:3000"
+# 9979 rest 
+# 9980 nginx export port
+# 9981 mysql
+# 9982 redis
