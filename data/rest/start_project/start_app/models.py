@@ -1,4 +1,6 @@
 
+from ctypes import addressof
+from unicodedata import name
 from django.db import models
 class User(models.Model):
     name = models.CharField(default = '', max_length=100, help_text='用户', verbose_name='用户名', unique = True)
@@ -63,13 +65,29 @@ class Staker(models.Model):
         db_table = "staker"
         verbose_name = "质押列表"
         
-class DailyUserCount(models.Model):
+class DailyOwnerUserCount(models.Model):
     day = models.CharField(default = '', max_length=100, help_text='记录时间', verbose_name='记录时间')
-    data = models.FloatField(default = 0, help_text='data', verbose_name='data')
+    count = models.FloatField(default = 0, help_text='count', verbose_name='count')
     update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
     class Meta:
-        db_table = "daily_user_count"
-        verbose_name = "质押列表"
+        db_table = "daily_owner_user_count"
+        verbose_name = "每日矿主数量"
+        
+class DailyStakeUserCount(models.Model):
+    day = models.CharField(default = '', max_length=100, help_text='记录时间', verbose_name='记录时间')
+    count = models.FloatField(default = 0, help_text='count', verbose_name='count')
+    update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
+    class Meta:
+        db_table = "daily_stake_user_count"
+        verbose_name = "每日投资者数量"
+        
+class DailyVCount(models.Model):
+    day = models.CharField(default = '', max_length=100, help_text='记录时间', verbose_name='记录时间')
+    count = models.FloatField(default = 0, help_text='count', verbose_name='count')
+    update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
+    class Meta:
+        db_table = "daily_v_count"
+        verbose_name = "每日V值数量"
         
 class DailyStakeAmount(models.Model):
     day = models.CharField(default = '', max_length=100, help_text='记录时间', verbose_name='记录时间')
@@ -85,8 +103,42 @@ class DailyMachinCount(models.Model):
     data = models.FloatField(default = 0, help_text='data', verbose_name='data')
     update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
     class Meta:
-        db_table = "daily_machine_count"
+        db_table = "daily_mechine_count"
         verbose_name = "质押列表"
+        
+class DailyAllAmount(models.Model):
+    day = models.CharField(default = '', max_length=100, help_text='记录时间', verbose_name='记录时间')
+    amount = models.FloatField(default = 0, help_text='amount', verbose_name='amount')
+    update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
+    class Meta:
+        db_table = "daily_all_amount"
+        verbose_name = "质押列表"
+        
+class StatisticTop10Owner(models.Model):
+    name = models.CharField(default = '', max_length=100, help_text='name', verbose_name='name')
+    addr = models.CharField(default = '', max_length=100, help_text='addr', verbose_name='addr')
+    v = models.FloatField(default = 0, help_text='v', verbose_name='v')
+    percent = models.FloatField(default = 0, help_text='percent', verbose_name='percent')
+    update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
+    class Meta:
+        db_table = "statistic_top10_owner"
+        verbose_name = "top10矿主"
+        
+class StatisticTop10Staker(models.Model):
+    name = models.CharField(default = '', max_length=100, help_text='name', verbose_name='name')
+    addr = models.CharField(default = '', max_length=100, help_text='addr', verbose_name='addr')
+    amount = models.FloatField(default = 0, help_text='v', verbose_name='v')
+    percent = models.FloatField(default = 0, help_text='percent', verbose_name='percent')
+    update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
+    class Meta:
+        db_table = "statistic_top10_staker"
+        verbose_name = "top10质押者"
+        
+class LatestUpdate(models.Model):
+    update_time = models.BigIntegerField(default = 0, help_text='LatestUpdate', verbose_name='LatestUpdate')
+    class Meta:
+        db_table = "latest_update"
+        verbose_name = "最后更新时间"
 """
     select sum(locked)/1000000000000,sum(shares)/1000000000000 from staker ;
     select count(*) from (select * from staker where locked != 0 group by addr)as x;

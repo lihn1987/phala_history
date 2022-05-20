@@ -10,6 +10,7 @@ services:
       - ./data/nginx/src/:/var/www/html/
     ports:
       - "9980:80"
+      
   pha_mysql:
     container_name: pha_mysql
     image: lihn1011/mysql:0.2
@@ -25,17 +26,18 @@ services:
   pha_scaner:
     container_name: pha_scaner
     image: lihn1011/ubuntu:0.5
-    command: /bin/bash -c "while true;do sleep 1 ; done"
+    command: /bin/bash -c "cd /opt/; while true; python3 scaner.py; do sleep 1 ; done"
     volumes:
         - ./data/scaner/:/opt/
     expose:
         - 80
     depends_on:
         - pha_mysql
+
   pha_rest:
     container_name: pha_rest
     image: lihn1011/rest:0.5
-    command: /bin/bash -c "while true;do sleep 1 ; done"
+    command: /bin/bash -c "cd /opt/start_project/; while true;python3 manage.py runserver 0.0.0.0:80;do sleep 1 ; done"
     volumes:
         - ./data/rest/:/opt/
     expose:
@@ -44,12 +46,13 @@ services:
         - "9979:80"
     depends_on:
         - pha_mysql
+
   pha_node_api:
         container_name: pha_node_api
         hostname: pha_node_api
         image: lihn1011/polka_nodejs:0.2
         #command: /bin/bash -c "cd /opt; while true; do sleep 1; done"
-        command: /bin/bash -c "cd /opt; while true; do sleep 1; done"
+        command: /bin/bash -c "cd /opt; while true; node index.mjs;do sleep 1; done"
         volumes:
           - ./data/node_api/:/opt/
         restart: always

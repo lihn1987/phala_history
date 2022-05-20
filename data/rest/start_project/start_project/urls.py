@@ -15,7 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from start_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('rest/get_top10_owner', views.get_top10_owner),
+    path('rest/get_top10_staker', views.get_top10_staker),
+    path('rest/get_param', views.get_param),
 ]

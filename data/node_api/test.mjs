@@ -16,18 +16,29 @@ try{
     console.log("=====================")
     console.log("api created")
     api = api_tmp
-
-    api.query.phalaStakePool.poolStakers.keys().then((data)=>{
-        var user_list = []
-        console.log(data.length)
-        data.map(({ args: [key] }) => {
-            user_list.push({
-                pid: key[0].toString(),
-                user: key[1].toString()
-            })   
-        })
-        console.log(user_list.length)
+    var pubkeys = [
+      1,2,3,4
+    ]
+    console.log("muti")
+    api.query.phalaStakePool.stakePools.multi(pubkeys, (data)=>{
+      console.log("data")
+      console.log(data.length)
+      for (var i = 0; i < data.length; i++){
+        console.log(data[i].toHuman())
+        console.log(data[i].toString())
+      }
     })
+    // api.query.phalaStakePool.poolStakers.keys().then((data)=>{
+    //     var user_list = []
+    //     console.log(data.length)
+    //     data.map(({ args: [key] }) => {
+    //         user_list.push({
+    //             pid: key[0].toString(),
+    //             user: key[1].toString()
+    //         })   
+    //     })
+    //     console.log(user_list.length)
+    // })
     
   }).catch((e)=>{
     console.log("=====================")

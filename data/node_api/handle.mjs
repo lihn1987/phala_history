@@ -27,17 +27,107 @@ function verify(msg){
     return signatureVerify(JSON.stringify({address:msg_addr, timestamp:msg_timestamp}), msg_sign, hexPublicKey).isValid
 }
 
-function handle_post(url, param, cb){
+function handle_post(path, param, cb){
+    try{
+        if(path == "/api/test"){
+            var pubkey = param.pubkey
+            console.log(pubkey)
+            cb("1122");
+        } else if(path == "/api/get_pools"){
+            var pids = param.pids
+            api.query.phalaStakePool.stakePools.multi(pids, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        }else if(path == "/api/get_stake_details"){
+            var pids = param.pid_addr
+            api.query.phalaStakePool.poolStakers.multi(pids, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        }else if(path == "/api/get_miner_details"){
+            var addrs = param.addrs
+            api.query.phalaMining.miners.multi(addrs, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        }else if(path == "/api/pubkey_2_address"){
+            var pubkeys = param.pubkeys
+            api.query.phalaMining.workerBindings.multi(pubkeys, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        } else if(path == "/api/pubkey_2_address"){
+            var pubkeys = param.pubkeys
+            api.query.phalaMining.workerBindings.multi(pubkeys, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        } else if(path == "/api/get_mechines_stake"){
+            var addrs = param.addrs
+            api.query.phalaMining.stakes.multi(addrs, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        } else if(path == "/api/get_accounts_name"){
+            var addrs = param.addrs
+            api.query.identity.identityOf.multi(addrs, (data)=>{
+                var rtn = []
+                for (var i = 0; i < data.length; i++){
+                    rtn.push(data[i].toString())
+                }
+                cb(rtn)
+            }).catch((e)=>{
+                cb(e)
+            })
+        }
+    } catch(e) {
+        cb(0)
+    }
 }
 function handle_get(path, param, cb){
     if(path == "/api/get_pool"){
         var pid = param.pid
         api.query.phalaStakePool.stakePools(pid).then((data)=>{
             cb(data.toString())
+        }).catch((e)=>{
+            cb(e)
         })
-    }if(path == "/api/get_pool_count"){
+    }else if(path == "/api/get_pool_count"){
         api.query.phalaStakePool.poolCount().then((data)=>{
             cb(data.toString())
+        }).catch((e)=>{
+            cb(e)
         })
     }else if(path == "/api/get_miner"){
       var pubkey = param.pubkey
@@ -45,13 +135,17 @@ function handle_get(path, param, cb){
           api.query.phalaMining.miners(data.toString()).then((v)=>{
               cb(v.toString())
           })
-      })
+      }).catch((e)=>{
+        cb(e)
+    })
     }else if(path == "/api/get_miner_detail"){
         var pubkey = param.pubkey
         api.query.phalaMining.workerBindings(pubkey).then((data)=>{
             api.query.phalaMining.miners(data.toString()).then((v)=>{
                 cb(v.toString())
             })
+        }).catch((e)=>{
+            cb(e)
         })
     }else if(path == "/api/get_stake_list"){
         console.log("here")
@@ -66,12 +160,16 @@ function handle_get(path, param, cb){
             })
             console.log(user_list.length)
             cb(JSON.stringify(user_list))
+        }).catch((e)=>{
+            cb(e)
         })
     } else if(path == "/api/get_stake_detail"){
         var pid = param.pid
         var addr = param.addr
         api.query.phalaStakePool.poolStakers([pid, addr]).then((data)=>{
             cb(data.toString())
+        }).catch((e)=>{
+            cb(e)
         })
     } else if(path == "/api/get_mechine_stake"){
         var pubkey = param.pubkey
@@ -79,8 +177,10 @@ function handle_get(path, param, cb){
             api.query.phalaMining.stakes(data.toString()).then((v)=>{
                 cb(v.toString())
             })
+        }).catch((e)=>{
+            cb(e)
         })
-    }
+    }  
     //cb("1122");
 }
 
