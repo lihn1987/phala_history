@@ -22,4 +22,6 @@ urlpatterns = [
     path('rest/get_top10_owner', views.get_top10_owner),
     path('rest/get_top10_staker', views.get_top10_staker),
     path('rest/get_param', views.get_param),
+    path('rest/get_latest_daily_v', views.get_latest_daily_v),
+    path('rest/get_latest_daily_stake', views.get_latest_daily_stake)
 ]

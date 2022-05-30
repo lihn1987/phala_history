@@ -20,7 +20,7 @@ def GetStakerList():
     obj = None
     while True:
         try:
-            res = request.urlopen('http://pha_node_api:3000/api/get_stake_list')
+            res = request.urlopen('http://pha_node_api:3000/api/get_stake_list', timeout = 50)
             obj = json.loads(json.loads(res.read()))
             break
         except:
@@ -35,7 +35,7 @@ def GetStakerDetail(pid, addr):
     res = None
     while True:
         try:
-            res = request.urlopen('http://pha_node_api:3000/api/get_stake_detail?pid=%d&addr=%s'%(int(pid), addr))
+            res = request.urlopen('http://pha_node_api:3000/api/get_stake_detail?pid=%d&addr=%s'%(int(pid), addr), timeout = 20)
             obj = json.loads(json.loads(res.read()))
             break
         except:
@@ -47,12 +47,12 @@ def GetStakerDetails(stake_list):
     obj = None
     while True:
         try:
-            # res = request.urlopen('http://pha_node_api:3000/api/get_pools', data=bytes(json.dumps({"pids":pids}), encoding="utf8"),timeout = 10)
+            # res = request.urlopen('http://pha_node_api:3000/api/get_pools', data=bytes(json.dumps({"pids":pids}), encoding="utf8"), timeout=20,timeout = 10)
             args = []
             for item in stake_list:
                 args.append((int(item['pid']), item['user']))
             print("start detail")
-            res = request.urlopen('http://pha_node_api:3000/api/get_stake_details', data=bytes(json.dumps({"pid_addr":args}), encoding="utf8"))
+            res = request.urlopen('http://pha_node_api:3000/api/get_stake_details', data=bytes(json.dumps({"pid_addr":args}), encoding="utf8"), timeout=20)
             obj = json.loads(res.read())
             # print(res.read())
             break
@@ -116,7 +116,7 @@ def GetPoolCount():
     res_obj = None
     while True:
         try:
-            res = request.urlopen('http://pha_node_api:3000/api/get_pool_count')
+            res = request.urlopen('http://pha_node_api:3000/api/get_pool_count', timeout=20)
             res_obj = json.loads(json.loads(res.read()))
             break
         except:
@@ -143,14 +143,15 @@ def ClaimWorkers():
     pid_list = []
     pool_count = GetPoolCount()
     
-    for i in range(int((pool_count-1)/1000)+1):
+    for i in range(int((pool_count-1)/100)+1):
+        print("stake %d/%d"%(i, int((pool_count-1)/100)))
         pids = []
         res_list = None
-        for index in range(int(i*1000), int((i+1)*1000) if int((i+1)*1000) < pool_count else pool_count):
+        for index in range(int(i*100), int((i+1)*100) if int((i+1)*100) < pool_count else pool_count):
             pids.append(index)
         while True:
             try:
-                res = request.urlopen('http://pha_node_api:3000/api/get_pools', data=bytes(json.dumps({"pids": pids}), encoding="utf8"))
+                res = request.urlopen('http://pha_node_api:3000/api/get_pools', data=bytes(json.dumps({"pids": pids}), encoding="utf8"), timeout=20)
                 res_list = json.loads(res.read())
                 break
             except:
@@ -215,16 +216,17 @@ def ClaimWorkers():
     db.commit()
     print("start claim workers address", len(worker_list))
     address_list = []
-    # res = request.urlopen('http://pha_node_api:3000/api/pubkey_2_address', data=bytes(json.dumps({"pubkeys": worker_ags}), encoding="utf8"), timeout = 50)
-    for i in range(int((len(worker_list)-1)/1000)+1):
+    # res = request.urlopen('http://pha_node_api:3000/api/pubkey_2_address', data=bytes(json.dumps({"pubkeys": worker_ags}), encoding="utf8"), timeout=20, timeout = 50)
+    for i in range(int((len(worker_list)-1)/100)+1):
+        print("claim pid %d/%d"%(i, int((len(worker_list)-1)/100)))
         worker_ags = []
-        for worker in worker_list[int(i*1000): int((i+1)*1000) if int((i+1)*1000) < len(worker_list) else len(worker_list)]:
+        for worker in worker_list[int(i*100): int((i+1)*100) if int((i+1)*100) < len(worker_list) else len(worker_list)]:
             worker_ags.append(worker)
             
         res_list = None
         while True:
             try:
-                res = request.urlopen('http://pha_node_api:3000/api/pubkey_2_address', data=bytes(json.dumps({"pubkeys": worker_ags}), encoding="utf8"))
+                res = request.urlopen('http://pha_node_api:3000/api/pubkey_2_address', data=bytes(json.dumps({"pubkeys": worker_ags}), encoding="utf8"), timeout=20)
                 res_list = json.loads(res.read())
                 break
             except:
@@ -246,7 +248,7 @@ def ClaimWorkers():
         res_list = None
         while True:
             try:
-                res = request.urlopen('http://pha_node_api:3000/api/get_mechines_stake', data=bytes(json.dumps({"addrs": addr_args}), encoding="utf8"))
+                res = request.urlopen('http://pha_node_api:3000/api/get_mechines_stake', data=bytes(json.dumps({"addrs": addr_args}), encoding="utf8"), timeout=20)
                 res_list = json.loads(res.read())
                 break
             except:
@@ -260,23 +262,27 @@ def ClaimWorkers():
     
     print("start claim workers details", len(address_list))
     details = []
-    for i in range(int((len(address_list)-1)/1000)+1):
-        print("%d/%d"%(i,int((len(address_list)-1)/1000)+1))
+    for i in range(int((len(address_list)-1)/100)+1):
+        print("%d/%d"%(i,int((len(address_list)-1)/100)+1))
         addr_args = []
-        for addr in address_list[int(i*1000): int((i+1)*1000) if int((i+1)*1000) < len(address_list) else len(address_list)]:
+        for addr in address_list[int(i*100): int((i+1)*100) if int((i+1)*100) < len(address_list) else len(address_list)]:
             addr_args.append(addr)
         obj = None
         while True:
             try:
-                res = request.urlopen('http://pha_node_api:3000/api/get_miner_details', data=bytes(json.dumps({"addrs": addr_args}), encoding="utf8"))
+                res = request.urlopen('http://pha_node_api:3000/api/get_miner_details', data=bytes(json.dumps({"addrs": addr_args}), encoding="utf8"), timeout=20)
                 obj = json.loads(res.read())
                 break
             except:
                 print("time_out")
                 time.sleep(1)
-        
         for item in obj:
-            details.append(json.loads(item))
+            try:
+                details.append(json.loads(item))
+            except:
+                print("!!!!!->", item)
+                time.sleep(1)
+                exit(0)
             
     for i, worker in enumerate(worker_list) :
         print(len(worker_list),i)
@@ -541,7 +547,7 @@ def GetAccountName(addrs):
     rtns = []
     while True:
         try:
-            res = request.urlopen('http://pha_node_api:3000/api/get_accounts_name', data=bytes(json.dumps({"addrs":addrs}), encoding="utf8"))
+            res = request.urlopen('http://pha_node_api:3000/api/get_accounts_name', data=bytes(json.dumps({"addrs":addrs}), encoding="utf8"), timeout=20)
             str = res.read().decode("utf-8");
             list = json.loads(str)
             for item_str in list:
