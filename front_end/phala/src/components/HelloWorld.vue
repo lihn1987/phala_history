@@ -38,11 +38,13 @@
               <el-table-column
                 prop="name"
                 label="名称"
-                width=180>
+                width=120
+                show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="addr"
-                label="地址">
+                label="地址"
+                show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="v"
@@ -69,11 +71,13 @@
               <el-table-column
                 prop="name"
                 label="名称"
-                width=180>
+                width=120
+                show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="addr"
-                label="地址">
+                label="地址"
+                show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="amount"
@@ -90,12 +94,25 @@
         </el-card>
       </el-col>
     </el-row>
-    
+    <el-row>
+      <el-col :span="12">
+        <div style="margin-top:24px">V值历史曲线</div>
+        <div id="v-charts" style="width:100%;height:400px;">
+        </div>
+      </el-col>
+      <el-col :span="12">
+        <div style="margin-top:24px">质押历史曲线(kw)</div>
+        <div id="stake-charts" style="width:100%;height:400px;">
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
+/* eslint-disable */
 import axios from 'axios'
+import * as echarts from 'echarts';
 export default {
   name: 'HelloWorld',
   props: {
@@ -112,6 +129,17 @@ export default {
         all_right_stake_amount: 0,
         all_owner_count: 0,
         all_staker_count: 0,
+      },
+      echarts_data: {
+        v_data: {
+          label_data: [],
+          value_data: []
+        },
+        stake_data: {
+          label_data: [],
+          value_data1: [],
+          value_data2: []
+        }
       }
     }
   },
@@ -152,6 +180,95 @@ export default {
         data = data.data
         self.param = data.data
       })
+    },
+    FlushVEchart: function(){
+      var chartDom = document.getElementById('v-charts');
+      var myChart = echarts.init(chartDom);
+      var option;
+      var self = this
+      axios.get("/rest/get_latest_daily_v").then(function(data){
+        self.echarts_data.v_data.label_data = data.data.data.label_data
+        self.echarts_data.v_data.value_data = data.data.data.value_data
+        option = {
+          xAxis: {
+            type: 'category',
+            data: self.echarts_data.v_data.label_data,
+          },
+          yAxis: {
+            type: 'value'
+          },
+          tooltip: {
+            trigger: 'axis'
+          },
+          grid: {
+            left: '1%',
+            right: '4%',
+            top: '20px',
+            bottom: '3%',
+            containLabel: true
+          },
+          series: [
+            {
+              data: self.echarts_data.v_data.value_data,
+              type: 'line',
+              smooth: true
+            }
+          ]
+        };
+        option && myChart.setOption(option);
+      })
+      
+    },
+    FlushStakeEchart: function(){
+      var chartDom = document.getElementById('stake-charts');
+      var myChart = echarts.init(chartDom);
+      var option;
+      var self = this
+      axios.get("/rest/get_latest_daily_stake").then(function(data){
+        self.echarts_data.stake_data.label_data = data.data.data.label_data
+        self.echarts_data.stake_data.value_data1 = data.data.data.value_data1
+        self.echarts_data.stake_data.value_data2 = data.data.data.value_data2
+        for (var i = 0; i < self.echarts_data.stake_data.value_data1.length; i++) {
+          self.echarts_data.stake_data.value_data1[i] = self.echarts_data.stake_data.value_data1[i]/10**12/10**7
+          self.echarts_data.stake_data.value_data2[i] = self.echarts_data.stake_data.value_data2[i]/10**12/10**7
+        }
+        option = {
+          xAxis: {
+            type: 'category',
+            data: self.echarts_data.stake_data.label_data,
+          },
+          yAxis: {
+            type: 'value'
+          },
+          tooltip: {
+            trigger: 'axis',
+            formatter:(params) =>{
+              return params[0].name+"</br>"+ params[0].marker+   "总质押量:"+params[0].data.toFixed(2)+"kw</br>"+
+                params[1].marker+   "使用的质押量:"+params[1].data.toFixed(2)+"kw</br>"
+            }
+          },
+          grid: {
+            left: '1%',
+            right: '4%',
+            top: '20px',
+            bottom: '3%',
+            containLabel: true
+          },
+          series: [
+            {
+              data: self.echarts_data.stake_data.value_data1,
+              type: 'line',
+              smooth: true
+            },{
+              data: self.echarts_data.stake_data.value_data2,
+              type: 'line',
+              smooth: true
+            }
+          ]
+        };
+        option && myChart.setOption(option);
+      })
+      
     }
   },
   mounted:function(){
@@ -159,6 +276,8 @@ export default {
     this.FlushTop10Owner()
     this.FlushTop10Staker()
     this.FlushParam()
+    this.FlushVEchart()
+    this.FlushStakeEchart()
   }
 }
 </script>
