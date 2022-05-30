@@ -52,6 +52,9 @@ class DailyMeachine(models.Model):
     class Meta:
         db_table = "daily_mechine"
         verbose_name = "机器列表"
+        indexes = [
+            models.Index(fields=["pubkey"])
+        ]
         
 class Staker(models.Model):
     pid = models.BigIntegerField(default = 0, help_text='pid', verbose_name='pid')

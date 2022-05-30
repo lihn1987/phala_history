@@ -87,3 +87,41 @@ def get_param(request):
             }
         }
         return JsonResponse(rtn)
+
+def get_latest_daily_v(request): 
+    if request.method == 'GET':
+        cursor = connection.cursor()
+        sql= "select day,count from daily_v_count order by day limit 30;"
+        cursor.execute(sql)
+        all_item = cursor.fetchall()
+        rtn = {
+            "result": 0,
+            "data":{
+                "label_data":[],
+                "value_data":[]
+            }
+        }
+        for item in all_item:
+            rtn["data"]["label_data"].append(item[0])
+            rtn["data"]["value_data"].append(item[1])
+        return JsonResponse(rtn)
+
+def get_latest_daily_stake(request): 
+    if request.method == 'GET':
+        cursor = connection.cursor()
+        sql= "select day, all_amount, used_amount from daily_stake_amount order by day limit 30;"
+        cursor.execute(sql)
+        all_item = cursor.fetchall()
+        rtn = {
+            "result": 0,
+            "data":{
+                "label_data":[],
+                "value_data1":[],
+                "value_data2":[]
+            }
+        }
+        for item in all_item:
+            rtn["data"]["label_data"].append(item[0])
+            rtn["data"]["value_data1"].append(item[1])
+            rtn["data"]["value_data2"].append(item[2])
+        return JsonResponse(rtn)
