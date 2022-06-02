@@ -23,5 +23,11 @@ urlpatterns = [
     path('rest/get_top10_staker', views.get_top10_staker),
     path('rest/get_param', views.get_param),
     path('rest/get_latest_daily_v', views.get_latest_daily_v),
-    path('rest/get_latest_daily_stake', views.get_latest_daily_stake)
+    path('rest/get_latest_daily_stake', views.get_latest_daily_stake),
+    path('rest/get_latest_daily_mechine_count', views.get_latest_daily_mechine_count),
+    path('rest/get_latest_daily_mechine_user_count', views.get_latest_daily_mechine_user_count),
+    path('rest/get_mechines/<str:pid>/<str:status>/<str:pubkey>/<int:page>', views.get_mechines),
+    path('rest/get_bml_error_pid', views.get_bml_error_pid),
+    path('rest/get_bml_special_error_mechine', views.get_bml_special_error_mechine),
+    path('rest/get_bml_error_mechine', views.get_bml_error_mechine),
 ]

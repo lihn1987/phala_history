@@ -15,6 +15,7 @@ class User(models.Model):
 
 class Mechine(models.Model):
     pubkey = models.CharField(default = '', max_length=100, help_text='矿机公钥', verbose_name='矿机公钥', unique = True)
+    name = models.CharField(default = '', max_length=100, help_text='矿机名称', verbose_name='矿机名称')
     pid = models.BigIntegerField(default = 0, help_text='pid', verbose_name='pid')
     v = models.BigIntegerField(default = 0, help_text='v', verbose_name='v')
     ve = models.BigIntegerField(default = 0, help_text='ve', verbose_name='ve')
@@ -38,6 +39,7 @@ class Pool(models.Model):
     cap = models.FloatField(default = 0, help_text='池子容量', verbose_name='池子容量')
     total_stake = models.FloatField(default = 0, help_text='total_stake', verbose_name='total_stake')
     free_stake = models.FloatField(default = 0, help_text='free_stake', verbose_name='free_stake')
+    with_draw_queue = models.IntegerField(default = 0, help_text='是否有提款队列', verbose_name='是否有提款队列')
     update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
     class Meta:
         db_table = "pool"

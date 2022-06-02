@@ -183,14 +183,16 @@ def ClaimWorkers():
                     cap,
                     total_stake,
                     free_stake,
+                    with_draw_queue,
                     update_time
-                )values(%d,'%s',%d,%d,%d,%d,%d)"""%(
+                )values(%d,'%s',%d,%d,%d,%d,%d,%d)"""%(
                     DealNum(miner_obj["pid"]),
                     miner_obj["owner"],
                     DealNum(miner_obj["payoutCommission"]),
                     DealNum(miner_obj["cap"]),
                     DealNum(miner_obj["totalStake"]),
                     DealNum(miner_obj["freeStake"]),
+                    0 if len(miner_obj["withdrawQueue"]) == 0 else 1,
                     time.time()
                     )
             # print(sql)
@@ -202,6 +204,7 @@ def ClaimWorkers():
                     cap = %d,
                     total_stake = %d,
                     free_stake = %d,
+                    with_draw_queue = %d,
                     update_time = %d
                 where pid=%d"""%(
                     miner_obj["owner"],
@@ -209,9 +212,20 @@ def ClaimWorkers():
                     DealNum(miner_obj["cap"]),
                     DealNum(miner_obj["totalStake"]),
                     DealNum(miner_obj["freeStake"]),
+                    0 if len(miner_obj["withdrawQueue"]) == 0 else 1,
                     time.time(),
                     DealNum(miner_obj["pid"])
                     )
+            cursor.execute(sql)
+    db.commit()
+    print("delete old mechine")
+    sql = "select pubkey from mechine"
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    for item in res:
+        if item[0] not in worker_list:
+            print("delete")
+            sql = "delete from mechine where pubkey = '%s'"%item[0]
             cursor.execute(sql)
     db.commit()
     print("start claim workers address", len(worker_list))
@@ -319,7 +333,8 @@ def ClaimWorkers():
                 stake_amount,
                 status_now,
                 start_time,
-                update_time
+                update_time,
+                name
             )values(
                 '%s',
                 %d,
@@ -331,7 +346,8 @@ def ClaimWorkers():
                 %d,
                 '%s',
                 %d,
-                %d
+                %d,
+                ''
             )
             """%(
                 worker,
@@ -361,7 +377,8 @@ def ClaimWorkers():
                 status_now = '%s',
                 start_time = %d,
                 update_time = %d,
-                stake_amount = %d
+                stake_amount = %d,
+                name = ''
             where pubkey = '%s'
             """%(
                 worker,
