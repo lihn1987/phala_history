@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="hello" style="min-width: 1450px">
     <div>
       <el-card>
         <el-row>
@@ -39,12 +39,12 @@
                 prop="name"
                 label="名称"
                 width=120
-                show-overflow-tooltip="true">
+                :show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="addr"
                 label="地址"
-                show-overflow-tooltip="true">
+                :show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="v"
@@ -72,12 +72,12 @@
                 prop="name"
                 label="名称"
                 width=120
-                show-overflow-tooltip="true">
+                :show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="addr"
                 label="地址"
-                show-overflow-tooltip="true">
+                :show-overflow-tooltip="true">
               </el-table-column>
               <el-table-column
                 prop="amount"
@@ -106,6 +106,103 @@
         </div>
       </el-col>
     </el-row>
+
+    <el-row>
+      <el-col :span="12">
+        <div style="margin-top:24px">机器数量历史曲线</div>
+        <div id="mechine-charts" style="width:100%;height:400px;">
+        </div>
+      </el-col>
+      <el-col :span="12">
+        <div style="margin-top:24px">机器拥有者历史曲线</div>
+        <div id="owner-charts" style="width:100%;height:400px;">
+        </div>
+      </el-col>
+    </el-row>
+    <div style="margin-top:24px;">机器列表</div>
+    
+    <el-row>
+      <el-card>
+        <el-row>
+          <el-checkbox v-model="mechine_condition.use_pid">使用PID条件</el-checkbox>
+          <div style="line-height: 32px;margin-left:24px;">pid:</div>
+          <el-input v-model="mechine_condition.pid" style = "width:200px;"></el-input>
+        </el-row>
+      </el-card>
+      
+      <el-card style="margin-left:24px">
+        <el-row>
+          <el-checkbox v-model="mechine_condition.use_status">使用机器状态条件</el-checkbox>
+          <div style="line-height: 32px;margin-left:24px;">机器状态:</div>
+          <el-select v-model="mechine_condition.status" placeholder="请选择">
+            <el-option key="0" label="机器状态正常" value="0"> </el-option>
+            <el-option key="1" label="机器状态异常" value="1"> </el-option>
+          </el-select>
+        </el-row>
+      </el-card>
+
+      <el-card style="margin-left:24px">
+        <el-row>
+          <el-checkbox v-model="mechine_condition.use_pubkey">使用pubkey条件</el-checkbox>
+          <div style="line-height: 32px;margin-left:24px;">pubkey:</div>
+          <el-input v-model="mechine_condition.pubkey" style = "width:200px;"></el-input>
+        </el-row>
+      </el-card>
+      <el-button type="primary" style="margin-left:24px;margin-top:18px" @click="OnSearchMechine">查询</el-button>
+    </el-row>
+    <el-table
+      :data="mechine_table.data"
+      stripe
+      style="width: 100%;margin-top:12px;">
+      <el-table-column 
+        prop = "name"
+        label = "name"
+        :show-overflow-tooltip="true"
+        width=180>
+      </el-table-column>
+      <el-table-column 
+        prop = "pid"
+        label = "pid"
+        width=80>
+      </el-table-column>
+      <el-table-column 
+        prop = "p_init"
+        label = "p_init"
+        width=80>
+      </el-table-column>
+      <el-table-column 
+        prop = "pubkey"
+        label = "pubkey"
+        :show-overflow-tooltip="true"
+        min-width="180">
+      </el-table-column>
+      <el-table-column 
+        prop = "stake_amount"
+        label = "stake_amount">
+      </el-table-column>
+      <el-table-column 
+        prop = "start_time"
+        label = "start_time">
+      </el-table-column>
+      <el-table-column 
+        prop = "status_now"
+        label = "status_now">
+      </el-table-column>
+      <el-table-column 
+        prop = "update_time"
+        label = "update_time">
+      </el-table-column>
+    </el-table>
+    <el-pagination
+      @size-change="mechine_table_size_change"
+      @current-change="mechine_table_cur_change"
+      :current-page="mechine_table.cur_page"
+      :page-size="10"
+      layout="total, prev, pager, next"
+      :total="mechine_table.count" 
+      background
+      style="justify-content:center">
+    </el-pagination>
   </div>
 </template>
 
@@ -120,6 +217,11 @@ export default {
   },
   data: function(){
     return {
+      mechine_table: {
+        count: 0,
+        data:[],
+        cur_page: 1
+      },
       top_owners:[],
       top_stakers:[],
       param:{
@@ -140,6 +242,14 @@ export default {
           value_data1: [],
           value_data2: []
         }
+      },
+      mechine_condition: {
+        use_pid: false,
+        pid: "1",
+        use_status: false,
+        status: "0",
+        use_pubkey: false,
+        pubkey: "0x"
       }
     }
   },
@@ -268,9 +378,113 @@ export default {
         };
         option && myChart.setOption(option);
       })
+    },
+    FlushMechineEchart: function(){
+      var chartDom = document.getElementById('mechine-charts');
+      var myChart = echarts.init(chartDom);
+      var option;
+      var self = this
+      axios.get("/rest/get_latest_daily_mechine_count").then(function(data){
+        self.echarts_data.v_data.label_data = data.data.data.label_data
+        self.echarts_data.v_data.value_data = data.data.data.value_data
+        option = {
+          xAxis: {
+            type: 'category',
+            data: self.echarts_data.v_data.label_data,
+          },
+          yAxis: {
+            type: 'value'
+          },
+          tooltip: {
+            trigger: 'axis'
+          },
+          grid: {
+            left: '1%',
+            right: '4%',
+            top: '20px',
+            bottom: '3%',
+            containLabel: true
+          },
+          series: [
+            {
+              data: self.echarts_data.v_data.value_data,
+              type: 'line',
+              smooth: true
+            }
+          ]
+        };
+        option && myChart.setOption(option);
+      })
       
+    },
+    FlushMechineUserEchart: function(){
+      var chartDom = document.getElementById('owner-charts');
+      var myChart = echarts.init(chartDom);
+      var option;
+      var self = this
+      axios.get("/rest/get_latest_daily_mechine_user_count").then(function(data){
+        self.echarts_data.v_data.label_data = data.data.data.label_data
+        self.echarts_data.v_data.value_data = data.data.data.value_data
+        option = {
+          xAxis: {
+            type: 'category',
+            data: self.echarts_data.v_data.label_data,
+          },
+          yAxis: {
+            type: 'value'
+          },
+          tooltip: {
+            trigger: 'axis'
+          },
+          grid: {
+            left: '1%',
+            right: '4%',
+            top: '20px',
+            bottom: '3%',
+            containLabel: true
+          },
+          series: [
+            {
+              data: self.echarts_data.v_data.value_data,
+              type: 'line',
+              smooth: true
+            }
+          ]
+        };
+        option && myChart.setOption(option);
+      })
+    },
+    mechine_table_size_change: function(val) {
+      console.log("mechine_table_size_change", val)
+    },
+    mechine_table_cur_change: function(val) {
+      this.mechine_table.cur_page = val
+      this.OnSearchMechine()
+    },
+    OnSearchMechine: function() {
+      var url = "/rest/get_mechines/"
+      url += (this.mechine_condition.use_pid == true)?this.mechine_condition.pid:"-"
+      url += "/"
+      url += (this.mechine_condition.use_status == true)?this.mechine_condition.status:"-"
+      url += "/"
+      url += (this.mechine_condition.use_pubkey == true)?this.mechine_condition.pubkey:"-"
+      url += "/"
+      url += this.mechine_table.cur_page
+      var self = this
+      axios.get(url).then(function(data){
+        data = data.data
+        for (var i = 0; i < data.data.length; i++) {
+          data.data[i].stake_amount = data.data[i].stake_amount/10**12
+          data.data[i].start_time = new Date(data.data[i].start_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
+          data.data[i].update_time = new Date(data.data[i].update_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
+        }
+        self.mechine_table.data = data.data
+        self.mechine_table.count = data.count
+      })
+      console.log(url) 
     }
   },
+  
   mounted:function(){
     console.log("?????")
     this.FlushTop10Owner()
@@ -278,24 +492,14 @@ export default {
     this.FlushParam()
     this.FlushVEchart()
     this.FlushStakeEchart()
+    this.FlushMechineEchart()
+    this.FlushMechineUserEchart()
   }
 }
+// path('/rest/get_latest_daily_mechine_count', views.get_latest_daily_mechine_count),
+// path('/rest/get_latest_daily_mechine_user_count', views.get_latest_daily_mechine_user_count)
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
 </style>
