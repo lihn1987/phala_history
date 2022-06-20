@@ -305,7 +305,9 @@ export default {
             data: self.echarts_data.v_data.label_data,
           },
           yAxis: {
-            type: 'value'
+            type: 'value',
+            min: 'dataMin',
+            max: 'dataMax',
           },
           tooltip: {
             trigger: 'axis'
@@ -348,7 +350,9 @@ export default {
             data: self.echarts_data.stake_data.label_data,
           },
           yAxis: {
-            type: 'value'
+            type: 'value',
+            min: 'dataMin',
+            max: 'dataMax',
           },
           tooltip: {
             trigger: 'axis',
@@ -393,7 +397,9 @@ export default {
             data: self.echarts_data.v_data.label_data,
           },
           yAxis: {
-            type: 'value'
+            type: 'value',
+            min: 'dataMin',
+            max: 'dataMax',
           },
           tooltip: {
             trigger: 'axis'
@@ -431,7 +437,9 @@ export default {
             data: self.echarts_data.v_data.label_data,
           },
           yAxis: {
-            type: 'value'
+            type: 'value',
+            min: 'dataMin',
+            max: 'dataMax',
           },
           tooltip: {
             trigger: 'axis'
