@@ -47,6 +47,10 @@
         prop = "update_time"
         label = "最后查询时间">
       </el-table-column>
+      <el-table-column 
+        prop = "status_change_time"
+        label = "状态变化的时间">
+      </el-table-column>
     </el-table>
 
     <div>所有的异常机器</div>
@@ -92,6 +96,10 @@
         prop = "update_time"
         label = "最后查询时间">
       </el-table-column>
+      <el-table-column 
+        prop = "status_change_time"
+        label = "状态变化的时间">
+      </el-table-column>
     </el-table>
   </div>
 </template>
@@ -130,6 +138,7 @@ export default {
           data.data[i].stake_amount = data.data[i].stake_amount/10**12
           data.data[i].start_time = new Date(data.data[i].start_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
           data.data[i].update_time = new Date(data.data[i].update_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
+          data.data[i].status_change_time = new Date(data.data[i].status_change_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
         }
         self.special_mechines = data.data
       })
@@ -142,6 +151,7 @@ export default {
           data.data[i].stake_amount = data.data[i].stake_amount/10**12
           data.data[i].start_time = new Date(data.data[i].start_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
           data.data[i].update_time = new Date(data.data[i].update_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
+          data.data[i].status_change_time = new Date(data.data[i].status_change_time*1000).toLocaleString().replace(/:\d{1,2}$/, ' ')
         }
         self.mechines = data.data
       })
