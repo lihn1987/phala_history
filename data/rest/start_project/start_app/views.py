@@ -91,7 +91,7 @@ def get_param(request):
 def get_latest_daily_v(request): 
     if request.method == 'GET':
         cursor = connection.cursor()
-        sql= "select day,count from daily_v_count order by day limit 30;"
+        sql= "select * from (select day,count from daily_v_count order by day desc limit 30) as x order by day;"
         cursor.execute(sql)
         all_item = cursor.fetchall()
         rtn = {
@@ -109,7 +109,7 @@ def get_latest_daily_v(request):
 def get_latest_daily_stake(request): 
     if request.method == 'GET':
         cursor = connection.cursor()
-        sql= "select day, all_amount, used_amount from daily_stake_amount order by day limit 30;"
+        sql= "select * from (select day, all_amount, used_amount from daily_stake_amount order by day desc limit 30) as x order by day;"
         cursor.execute(sql)
         all_item = cursor.fetchall()
         rtn = {
@@ -129,7 +129,7 @@ def get_latest_daily_stake(request):
 def get_latest_daily_mechine_count(request): 
     if request.method == 'GET':
         cursor = connection.cursor()
-        sql= "select day,data from daily_mechine_count order by day limit 30;"
+        sql= "select * from (select day,data from daily_mechine_count order by day desc limit 30) as x order by day;"
         cursor.execute(sql)
         all_item = cursor.fetchall()
         rtn = {
@@ -147,7 +147,7 @@ def get_latest_daily_mechine_count(request):
 def get_latest_daily_mechine_user_count(request): 
     if request.method == 'GET':
         cursor = connection.cursor()
-        sql= "select day,count from daily_owner_user_count order by day limit 30;"
+        sql= "select * from (select day,count from daily_owner_user_count order by day desc  limit 30) as x order by day;"
         cursor.execute(sql)
         all_item = cursor.fetchall()
         rtn = {
@@ -164,6 +164,7 @@ def get_latest_daily_mechine_user_count(request):
 
 def get_mechines(request, pid, status, pubkey, page): #
     if request.method == 'GET':
+        page-=1
         cursor = connection.cursor()
         print(pid, status, pubkey)
         where_sql = ""
@@ -187,6 +188,7 @@ def get_mechines(request, pid, status, pubkey, page): #
             %s
             order by id
         """%where_sql
+        
         cursor.execute(sql)
         res = cursor.fetchall()
         all_count = res[0][0]
@@ -208,6 +210,7 @@ def get_mechines(request, pid, status, pubkey, page): #
             %s
             order by id 
             limit %d,10"""%( where_sql,page*10)
+        # print(sql)
         cursor.execute(sql)
         all_item = cursor.fetchall()
         rtn = {
@@ -267,7 +270,8 @@ def get_bml_special_error_mechine(request):
             status_now, 
             pid,
             start_time,
-            update_time 
+            update_time,
+            status_change_time
         from 
             mechine 
         where 
@@ -294,7 +298,8 @@ def get_bml_special_error_mechine(request):
                 "status_now": item[6] ,
                 "pid": item[7],
                 "start_time": item[8],
-                "update_time": item[9]
+                "update_time": item[9],
+                "status_change_time": item[10]
                 }
             )
         return JsonResponse(rtn)
@@ -313,7 +318,8 @@ def get_bml_error_mechine(request):
             status_now, 
             pid,
             start_time,
-            update_time 
+            update_time,
+            status_change_time
         from 
             mechine 
         where 
@@ -343,7 +349,86 @@ def get_bml_error_mechine(request):
                 "status_now": item[6] ,
                 "pid": item[7],
                 "start_time": item[8],
-                "update_time": item[9]
+                "update_time": item[9],
+                "status_change_time": item[10]
                 }
             )
+        return JsonResponse(rtn)
+
+def get_bml_xq(request):
+    if request.method == 'GET':
+        cursor = connection.cursor()
+        sql = """
+        select 
+            pid, status_now,name
+        from 
+            mechine 
+        where 
+            ((pid >= 413 and 
+            pid <= 476) or 
+            pid in (1922,1923,1924,1925,1926,1934)) and 
+            status_now != "Ready" and
+            status_now != "MiningCoolingDown"
+        order by pid
+        """
+        cursor.execute(sql)
+        all_item = cursor.fetchall()
+        rtn = {
+            "result": 0,
+            "data":{
+                "4":{
+                    "right": 0,
+                    "error": 0
+                },
+                "6":{
+                    "right": 0,
+                    "error": 0
+                },
+                "0":{
+                    "right": 0,
+                    "error": 0
+                },
+                "abroad":{
+                    "right": 0,
+                    "error": 0
+                },
+                "detail":{
+
+                }
+            }
+        }
+        for item in all_item:
+            if item[0] not in rtn["data"]["detail"]:
+                rtn["data"]["detail"][item[0]] = {
+                    "right": 0,
+                    "error": 0
+                }
+            if item[1] == "MiningIdle":
+                rtn["data"]["detail"][item[0]]["right"] += 1
+            else:
+                rtn["data"]["detail"][item[0]]["error"] += 1
+            if int(item[0]) > 1000:
+                if item[1] == "MiningIdle":
+                    rtn["data"]["abroad"]["right"] = rtn["data"]["abroad"]["right"] + 1
+                else:
+                    rtn["data"]["abroad"]["error"] = rtn["data"]["abroad"]["error"] + 1
+            else:
+                if item[2] == "":
+                    if item[1] == "MiningIdle":
+                        rtn["data"]["0"]["right"] = rtn["data"]["0"]["right"] + 1
+                    else:
+                        rtn["data"]["0"]["error"] = rtn["data"]["0"]["error"] + 1
+                else:
+                    name = item[2]
+                    line = int(name[name.rfind("-")+1:-1])
+                    if line <= 16:
+                        if item[1] == "MiningIdle":
+                            rtn["data"]["6"]["right"] = rtn["data"]["6"]["right"] + 1
+                        else:
+                            rtn["data"]["6"]["error"] = rtn["data"]["6"]["error"] + 1
+                    else:
+                        if item[1] == "MiningIdle":
+                            rtn["data"]["4"]["right"] = rtn["data"]["4"]["right"] + 1
+                        else:
+                            rtn["data"]["4"]["error"] = rtn["data"]["4"]["error"] + 1
         return JsonResponse(rtn)

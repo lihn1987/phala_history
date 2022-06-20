@@ -315,7 +315,6 @@ def ClaimWorkers():
             cursor.execute(sql)
         
         # print(obj["stats"]["totalReward"]/1000000000000)
-        
         sql = "select count(*) from mechine where pubkey='%s'"%worker
         cursor.execute(sql)
         results = cursor.fetchall()
@@ -364,36 +363,73 @@ def ClaimWorkers():
             )
             cursor.execute(sql)
         else:
-            sql = """
-            update mechine
-                set 
-                pubkey = '%s',
-                pid = %d,
-                v = %d,
-                ve = %d,
-                p_now = %d,
-                p_init = %d,
-                history_amount = %d,
-                status_now = '%s',
-                start_time = %d,
-                update_time = %d,
-                stake_amount = %d,
-                name = ''
-            where pubkey = '%s'
-            """%(
-                worker,
-                pubkey2pid[worker],
-                0 if obj["v"] == 0 else int(obj["v"][:18], 16),
-                0 if obj["v"] == 0 else int(obj["ve"][:18], 16),
-                DealNum(obj["benchmark"]["pInstant"]),
-                DealNum(obj["benchmark"]["pInit"]),
-                DealNum(obj["stats"]["totalReward"]),
-                obj["state"],
-                DealNum(obj["benchmark"]["miningStartTime"]),
-                time.time(),
-                stakes[i],
-                worker
-            )
+            # 查询上次状态，如果状态发生变化需要更新时间
+            sql = "select status_now from mechine where pubkey='%s'"%worker
+            cursor.execute(sql)
+            res = cursor.fetchall()
+            status = res[0][0]
+            if status == obj["state"]:
+                sql = """
+                update mechine
+                    set 
+                    pubkey = '%s',
+                    pid = %d,
+                    v = %d,
+                    ve = %d,
+                    p_now = %d,
+                    p_init = %d,
+                    history_amount = %d,
+                    status_now = '%s',
+                    start_time = %d,
+                    update_time = %d,
+                    stake_amount = %d
+                where pubkey = '%s'
+                """%(
+                    worker,
+                    pubkey2pid[worker],
+                    0 if obj["v"] == 0 else int(obj["v"][:18], 16),
+                    0 if obj["v"] == 0 else int(obj["ve"][:18], 16),
+                    DealNum(obj["benchmark"]["pInstant"]),
+                    DealNum(obj["benchmark"]["pInit"]),
+                    DealNum(obj["stats"]["totalReward"]),
+                    obj["state"],
+                    DealNum(obj["benchmark"]["miningStartTime"]),
+                    time.time(),
+                    stakes[i],
+                    worker
+                )
+            else:
+                sql = """
+                update mechine
+                    set 
+                    pubkey = '%s',
+                    pid = %d,
+                    v = %d,
+                    ve = %d,
+                    p_now = %d,
+                    p_init = %d,
+                    history_amount = %d,
+                    status_now = '%s',
+                    start_time = %d,
+                    update_time = %d,
+                    stake_amount = %d,
+                    status_change_time = %d
+                where pubkey = '%s'
+                """%(
+                    worker,
+                    pubkey2pid[worker],
+                    0 if obj["v"] == 0 else int(obj["v"][:18], 16),
+                    0 if obj["v"] == 0 else int(obj["ve"][:18], 16),
+                    DealNum(obj["benchmark"]["pInstant"]),
+                    DealNum(obj["benchmark"]["pInit"]),
+                    DealNum(obj["stats"]["totalReward"]),
+                    obj["state"],
+                    DealNum(obj["benchmark"]["miningStartTime"]),
+                    time.time(),
+                    stakes[i],
+                    time.time(),
+                    worker
+                )
             cursor.execute(sql)
             db.commit()
         

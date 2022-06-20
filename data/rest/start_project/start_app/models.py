@@ -26,6 +26,7 @@ class Mechine(models.Model):
     status_now = models.CharField(default = '', max_length=100, help_text='当前状态', verbose_name='当前状态')
     start_time = models.BigIntegerField(default = 0, help_text='开始挖矿时间', verbose_name='开始挖矿时间')
     update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
+    status_change_time = models.BigIntegerField(default = 0, help_text='异常时间a', verbose_name='异常时间')
     def __str__(self) -> str:
         return self.pubkey
     class Meta:
@@ -51,7 +52,7 @@ class DailyMeachine(models.Model):
     update_time = models.CharField(default = '', max_length=100, help_text='更新时间', verbose_name='更新时间')
     def __str__(self) -> str:
         return self.pubkey
-    class Meta:
+    class Meta: 
         db_table = "daily_mechine"
         verbose_name = "机器列表"
         indexes = [

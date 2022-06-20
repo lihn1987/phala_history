@@ -30,4 +30,5 @@ urlpatterns = [
     path('rest/get_bml_error_pid', views.get_bml_error_pid),
     path('rest/get_bml_special_error_mechine', views.get_bml_special_error_mechine),
     path('rest/get_bml_error_mechine', views.get_bml_error_mechine),
+    path('rest/get_bml_xq', views.get_bml_xq),
 ]
